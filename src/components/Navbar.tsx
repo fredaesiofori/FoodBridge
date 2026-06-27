@@ -44,6 +44,13 @@ export const Navbar: React.FC<NavbarProps> = ({
     ? (currentUser.ratingSum / currentUser.reviewCount).toFixed(1) 
     : null;
 
+  const getAllowedDemoRoles = (role: UserRole): UserRole[] => {
+    if (role === 'recipient') return ['recipient'];
+    if (role === 'donor') return ['donor'];
+    return ['donor', 'recipient', 'guest', 'admin'];
+  };
+  const demoRoles = getAllowedDemoRoles(currentUser.role);
+
   return (
     <nav className="border-b border-[#E6E2D3] dark:border-[#24421C] bg-white dark:bg-[#12220E] px-3 sm:px-4 md:px-6 py-2.5 md:py-0 md:h-16 flex flex-col md:flex-row md:items-center justify-between shrink-0 z-20 transition-colors gap-2.5 md:gap-4 min-w-0">
       {/* Top Tier on Mobile / Left Tier on Desktop */}
@@ -74,17 +81,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Mobile Role Switcher */}
-          <select
-            value={currentUser.role}
-            onChange={(e) => onSwitchRole(e.target.value as UserRole)}
-            aria-label="Switch User Role"
-            className="bg-[#F3F0E6] dark:bg-[#1C3317] border border-[#E6E2D3] dark:border-[#2A4B20] text-[#1D1B16] dark:text-[#EAE6DF] text-xs font-extrabold rounded-lg px-1.5 py-2 min-h-[44px] cursor-pointer outline-none capitalize shrink-0"
-          >
-            <option value="donor">Donor</option>
-            <option value="recipient">Recipient</option>
-            <option value="guest">Guest</option>
-            <option value="admin">Admin</option>
-          </select>
+          {demoRoles.length > 1 && (
+            <select
+              value={currentUser.role}
+              onChange={(e) => onSwitchRole(e.target.value as UserRole)}
+              aria-label="Switch User Role"
+              className="bg-[#F3F0E6] dark:bg-[#1C3317] border border-[#E6E2D3] dark:border-[#2A4B20] text-[#1D1B16] dark:text-[#EAE6DF] text-xs font-extrabold rounded-lg px-1.5 py-2 min-h-[44px] cursor-pointer outline-none capitalize shrink-0"
+            >
+              {demoRoles.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          )}
 
           {/* Deep-Forest Dark Mode Switcher */}
           <button
@@ -173,22 +181,24 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         {/* Role Demo Switcher */}
-        <div className="hidden lg:flex items-center bg-[#F3F0E6] dark:bg-[#1C3317] rounded-lg p-0.5 border border-[#E6E2D3] dark:border-[#2A4B20] text-[11px]">
-          <span className="px-2 font-bold text-[#79776E] dark:text-[#8AA280] text-[10px]">ROLE:</span>
-          {(['donor', 'recipient', 'guest', 'admin'] as UserRole[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => onSwitchRole(r)}
-              className={`px-2.5 py-1 min-h-[36px] rounded-md font-bold capitalize transition-all cursor-pointer ${
-                currentUser.role === r
-                  ? 'bg-[#386A20] dark:bg-[#4E8832] text-white shadow-xs'
-                  : 'text-[#79776E] dark:text-[#8AA280] hover:text-[#1D1B16] dark:hover:text-[#EAE6DF]'
-              }`}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
+        {demoRoles.length > 1 && (
+          <div className="hidden lg:flex items-center bg-[#F3F0E6] dark:bg-[#1C3317] rounded-lg p-0.5 border border-[#E6E2D3] dark:border-[#2A4B20] text-[11px]">
+            <span className="px-2 font-bold text-[#79776E] dark:text-[#8AA280] text-[10px]">ROLE:</span>
+            {demoRoles.map((r) => (
+              <button
+                key={r}
+                onClick={() => onSwitchRole(r)}
+                className={`px-2.5 py-1 min-h-[36px] rounded-md font-bold capitalize transition-all cursor-pointer ${
+                  currentUser.role === r
+                    ? 'bg-[#386A20] dark:bg-[#4E8832] text-white shadow-xs'
+                    : 'text-[#79776E] dark:text-[#8AA280] hover:text-[#1D1B16] dark:hover:text-[#EAE6DF]'
+                }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* User Profile */}
         <div className="flex items-center gap-2.5">

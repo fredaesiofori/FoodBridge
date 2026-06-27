@@ -112,32 +112,43 @@ export default function App() {
     drop: null,
   });
   const [confettiDrop, setConfettiDrop] = useState<FoodDrop | null>(null);
-  const [currentRoute, setCurrentRoute] = useState<string>(() => window.location.hash || `#/dashboard/${currentUser.role}`);
+  const [currentRoute, setCurrentRoute] = useState<string>(() => {
+    const hash = window.location.hash || `#/dashboard/${currentUser.role}`;
+    if (hash.includes('/admin') && currentUser.role !== 'admin') return '#/unauthorized';
+    if (hash.includes('/donor') && currentUser.role !== 'donor' && currentUser.role !== 'admin') return '#/unauthorized';
+    if (hash.includes('/recipient') && currentUser.role !== 'recipient' && currentUser.role !== 'admin') return '#/unauthorized';
+    return hash;
+  });
 
   // Enforce Secure Role-Based URL Route Protection
   useEffect(() => {
     const handleHashSync = () => {
       const hash = window.location.hash || `#/dashboard/${currentUser.role}`;
-      setCurrentRoute(hash);
 
       // RBAC URL Route Guard Rules
       if (hash.includes('/admin') && currentUser.role !== 'admin') {
         window.location.hash = '#/unauthorized';
+        setCurrentRoute('#/unauthorized');
         return;
       }
       if (hash.includes('/donor') && currentUser.role !== 'donor' && currentUser.role !== 'admin') {
         window.location.hash = '#/unauthorized';
+        setCurrentRoute('#/unauthorized');
         return;
       }
       if (hash.includes('/recipient') && currentUser.role !== 'recipient' && currentUser.role !== 'admin') {
         window.location.hash = '#/unauthorized';
+        setCurrentRoute('#/unauthorized');
         return;
       }
+
+      setCurrentRoute(hash);
     };
 
     window.addEventListener('hashchange', handleHashSync);
-    if (!window.location.hash) {
+    if (!window.location.hash || window.location.hash === '#/unauthorized') {
       window.location.hash = `#/dashboard/${currentUser.role}`;
+      setCurrentRoute(`#/dashboard/${currentUser.role}`);
     } else {
       handleHashSync();
     }
@@ -146,6 +157,8 @@ export default function App() {
 
   // Role switching helper
   const handleSwitchRole = (role: UserRole) => {
+    if (currentUser.role === 'recipient' && role !== 'recipient') return;
+    if (currentUser.role === 'donor' && role !== 'donor') return;
     window.location.hash = `#/dashboard/${role}`;
     const matchingUser = INITIAL_USERS.find((u) => u.role === role);
     if (matchingUser) {
