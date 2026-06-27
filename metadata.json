@@ -1,0 +1,6 @@
+{
+  "name": "FoodBridge",
+  "description": "Real-Time Surplus Food Donation Platform connecting food donors with recipients to rescue surplus food before it expires.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
