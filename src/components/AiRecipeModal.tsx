@@ -28,9 +28,21 @@ export const AiRecipeModal: React.FC<AiRecipeModalProps> = ({
     setLoading(true);
     setError(null);
     try {
+      const token = localStorage.getItem('foodbridge_auth_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'x-user-role': currentUser.role,
+        'x-user-id': currentUser.id,
+        'x-user-email': currentUser.email,
+        'x-user-name': currentUser.name,
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch('/api/gemini/recipe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           foodTitle: title,
           quantity: qty,

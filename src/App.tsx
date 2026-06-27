@@ -9,6 +9,8 @@ import { ProfileModal } from './components/ProfileModal';
 import { CreateDropModal } from './components/CreateDropModal';
 import { AiRecipeModal } from './components/AiRecipeModal';
 import { ConfettiOverlay } from './components/ConfettiOverlay';
+import { SplashScreen } from './components/SplashScreen';
+import { AnimatePresence } from 'motion/react';
 import { INITIAL_DROPS, INITIAL_USERS } from './data';
 import { FoodCategory, FoodDrop, SegmentTab, SortOption, User, UserRole, ViewMode } from './types';
 import { Sparkles, SlidersHorizontal, ArrowUpDown, RefreshCw, ShieldAlert } from 'lucide-react';
@@ -20,6 +22,9 @@ const STORAGE_KEY_USER = 'foodbridge_user_v1';
 const STORAGE_KEY_THEME = 'foodbridge_theme_v1';
 
 export default function App() {
+  // Startup Splash Screen State
+  const [showSplash, setShowSplash] = useState(true);
+
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return localStorage.getItem(STORAGE_KEY_THEME) === 'dark';
@@ -257,6 +262,18 @@ export default function App() {
 
   return (
     <div className={`flex flex-col h-screen w-full bg-[#FDFCF8] dark:bg-[#0E1E0B] text-[#1D1B16] dark:text-[#EAE6DF] font-sans overflow-hidden select-none transition-colors ${isDarkMode ? 'dark' : ''}`}>
+      {/* Startup Animated Splash Screen */}
+      <AnimatePresence>
+        {showSplash && (
+          <SplashScreen
+            onFinish={() => {
+              setShowSplash(false);
+              setAuthModal({ isOpen: true, mode: 'login' });
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Simulated Nearby Match Alert Toast Popup */}
       {toastAlert && (
         <div className="fixed top-20 right-6 z-50 max-w-sm bg-white dark:bg-[#1C3317] border-2 border-[#386A20] dark:border-[#90C872] p-4 rounded-2xl shadow-xl animate-bounce flex flex-col gap-1.5 transition-all text-xs">

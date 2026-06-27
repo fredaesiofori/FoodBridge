@@ -261,21 +261,21 @@ export const DropCard: React.FC<DropCardProps> = ({
               <Sparkles className="w-3.5 h-3.5" />
             </button>
 
-            {drop.status === 'available' && (
+            {drop.status === 'available' && currentUser.role !== 'donor' && (
               <button
                 onClick={() => onClaim(drop.id)}
                 className="px-4 py-2 min-h-[36px] bg-[#386A20] dark:bg-[#4E8832] hover:bg-[#2C5319] dark:hover:bg-[#629E44] text-white rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center shrink-0"
               >
-                Claim Drop
+                {currentUser.role === 'guest' ? 'Sign in to Claim' : 'Claim Drop'}
               </button>
             )}
 
-            {drop.status === 'claimed' && (
+            {drop.status === 'claimed' && currentUser.role !== 'donor' && (
               <button
                 onClick={() => onMarkCollected(drop.id)}
                 className="px-3.5 py-2 min-h-[36px] bg-white dark:bg-[#12220E] border border-[#386A20] dark:border-[#76B058] text-[#386A20] dark:text-[#90C872] hover:bg-[#E7F0E1] dark:hover:bg-[#1C3317] rounded-full text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
               >
-                Mark Collected
+                {currentUser.role === 'guest' ? 'Sign in to Collect' : 'Mark Collected'}
               </button>
             )}
 

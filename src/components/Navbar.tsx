@@ -139,8 +139,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
+      {/* Public Pages & Role Navigation Links */}
+      <div className="hidden lg:flex items-center gap-3.5 text-xs font-bold text-[#79776E] dark:text-[#8AA280] shrink-0 mx-2">
+        <a href="#/home" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors">Home</a>
+        <a href={`#/dashboard/${currentUser.role}`} className="text-[#386A20] dark:text-[#90C872] bg-[#E7F0E1] dark:bg-[#224418] px-3 py-1.5 rounded-full shadow-2xs font-extrabold capitalize">
+          {currentUser.role} Dashboard
+        </a>
+        <a href="#/about" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors">About</a>
+        <a href="#/faq" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors">FAQ</a>
+        <a href="#/contact" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors">Contact</a>
+      </div>
+
       {/* Desktop Controls (Hidden on Mobile) */}
-      <div className="hidden md:flex items-center gap-2 sm:gap-4 shrink-0">
+      <div className="hidden md:flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Simulate Toast Notification Trigger */}
         <button
           onClick={onSimulateAlert}

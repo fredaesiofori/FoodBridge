@@ -26,6 +26,8 @@ export interface User {
   role: UserRole;
   avatar: string;
   organization?: string;
+  status?: 'active' | 'suspended' | 'pending';
+  activityLog?: string[];
   preferredFoodTypes: FoodCategory[];
   preferredRadiusKm: number;
   ratingSum?: number;

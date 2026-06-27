@@ -6,6 +6,12 @@ export const INITIAL_USERS: User[] = [
     name: "St. Jude's Community Shelter",
     email: 'contact@stjudesshelter.org',
     role: 'recipient',
+    status: 'active',
+    activityLog: [
+      'Collected 45 Artisan Croissants drop',
+      'Requested AI recipe for surplus vegetables',
+      'Browsed North Precinct listings'
+    ],
     avatar: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=150&auto=format&fit=crop&q=80',
     organization: "St. Jude's Shelter",
     preferredFoodTypes: ['Bakery & Bread', 'Prepared Meals', 'Fresh Produce'],
@@ -28,6 +34,12 @@ export const INITIAL_USERS: User[] = [
     name: 'Green Wheat Bakery',
     email: 'manager@greenwheat.com',
     role: 'donor',
+    status: 'active',
+    activityLog: [
+      'Posted 30 Fresh Sandwiches drop',
+      'Updated surplus expiration timeline',
+      'Rated recipient pickup 5 stars'
+    ],
     avatar: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&auto=format&fit=crop&q=80',
     organization: 'Green Wheat Artisan Bakery',
     preferredFoodTypes: ['Bakery & Bread'],
@@ -50,6 +62,12 @@ export const INITIAL_USERS: User[] = [
     name: 'Freda Esiofori (Platform Admin)',
     email: 'fredaesiofori905@gmail.com',
     role: 'admin',
+    status: 'active',
+    activityLog: [
+      'Performed full RBAC security audit',
+      'Approved Green Wheat donor verification',
+      'Generated platform impact telemetry'
+    ],
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
     organization: 'FoodBridge Central Admin',
     preferredFoodTypes: ['Bakery & Bread', 'Fresh Produce', 'Prepared Meals', 'Dairy & Refrigerated', 'Pantry & Dry', 'Catering & Trays'],
@@ -60,6 +78,11 @@ export const INITIAL_USERS: User[] = [
     name: 'Community Guest Visitor',
     email: 'guest@foodbridge.org',
     role: 'guest',
+    status: 'active',
+    activityLog: [
+      'Browsed public homepage listings',
+      'Searched for prepared meals nearby'
+    ],
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     organization: 'Guest Explorer',
     preferredFoodTypes: ['Bakery & Bread', 'Fresh Produce'],
