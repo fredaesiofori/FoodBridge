@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, MapPin, Sparkles, CheckCircle, Package, Utensils, AlertTriangle, ShieldX } from 'lucide-react';
+import { Clock, MapPin, Sparkles, CheckCircle, Package, Utensils, AlertTriangle, ShieldX, Share2, Check } from 'lucide-react';
 import { FoodDrop, User, UserRole } from '../types';
 import { formatTimeLeft } from '../utils';
 
@@ -25,6 +25,16 @@ export const DropCard: React.FC<DropCardProps> = ({
   const [ratingVal, setRatingVal] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isRatingSubmitted, setIsRatingSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    const url = `${window.location.origin}${window.location.pathname}?dropId=${drop.id}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).catch(() => {});
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const time = formatTimeLeft(drop.expiresAt);
   const isClaimedByMe = drop.claimedBy === currentUser.name || drop.claimedBy === currentUser.id;
@@ -209,6 +219,13 @@ export const DropCard: React.FC<DropCardProps> = ({
             <span className="font-bold text-[#1D1B16] dark:text-[#EAE6DF]">{drop.donorName}</span>
           </p>
 
+          {drop.scheduledPickupTime && (
+            <div className="text-xs text-[#386A20] dark:text-[#A4D888] font-bold flex items-center gap-1.5 mb-2 bg-[#E7F0E1]/80 dark:bg-[#203D17]/80 px-2.5 py-1 rounded-lg w-fit border border-[#386A20]/20">
+              <Clock className="w-3.5 h-3.5 shrink-0 text-[#386A20] dark:text-[#A4D888]" />
+              <span>Pickup Window: {drop.scheduledPickupTime}</span>
+            </div>
+          )}
+
           {drop.notes && (
             <p className="text-[11px] text-[#79776E] dark:text-[#8AA280] bg-[#F3F0E6]/60 dark:bg-[#1C3317]/60 p-2 rounded-lg line-clamp-2 italic mb-2">
               "{drop.notes}"
@@ -252,6 +269,15 @@ export const DropCard: React.FC<DropCardProps> = ({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleShare}
+              title={copied ? "Link Copied!" : "Copy link to share item"}
+              aria-label="Share Drop Link"
+              className="p-2.5 min-h-[36px] min-w-[36px] bg-[#F3F0E6] dark:bg-[#1C3317] hover:bg-[#E7F0E1] dark:hover:bg-[#203D17] text-[#386A20] dark:text-[#A4D888] rounded-full transition-colors cursor-pointer flex items-center justify-center shrink-0"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-green-600 dark:text-green-400" /> : <Share2 className="w-3.5 h-3.5" />}
+            </button>
+
             <button
               onClick={() => onOpenAiRecipe(drop)}
               title="Generate Chef Gemini Zero-Waste Ideas"

@@ -21,7 +21,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
+  const [socialLoading, setSocialLoading] = useState<'google' | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -98,11 +98,11 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
     }
   };
 
-  const handleSocialMock = (provider: 'google' | 'apple') => {
+  const handleSocialMock = (provider: 'google') => {
     setSocialLoading(provider);
     setTimeout(() => {
       setSocialLoading(null);
-      onLoginSuccess('recipient', provider === 'google' ? 'Google Authenticated Kitchen' : 'Apple Verified Food Pantry', `${provider}_user@foodbridge.org`);
+      onLoginSuccess('recipient', 'Google Authenticated Kitchen', `${provider}_user@foodbridge.org`);
       onClose();
     }, 1000);
   };
@@ -294,12 +294,12 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                 <p className="text-center text-[10px] uppercase font-bold text-[#79776E] mb-3 tracking-wider">
                   Or Instant Sign In With
                 </p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex justify-center">
                   <button
                     type="button"
                     onClick={() => handleSocialMock('google')}
                     disabled={!!socialLoading}
-                    className="py-2.5 bg-white border border-[#E6E2D3] hover:bg-[#F3F0E6] rounded-xl text-xs font-bold text-[#1D1B16] flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
+                    className="w-full py-2.5 bg-white border border-[#E6E2D3] hover:bg-[#F3F0E6] rounded-xl text-xs font-bold text-[#1D1B16] flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
                       <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
@@ -307,19 +307,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                       <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.5 0 15.5s.7 5.8 1.9 8.2l3.7-2.9c-.9-.8-1.7-2-2-3z"/>
                       <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"/>
                     </svg>
-                    <span>{socialLoading === 'google' ? 'Connecting...' : 'Google'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleSocialMock('apple')}
-                    disabled={!!socialLoading}
-                    className="py-2.5 bg-[#1D1B16] text-white hover:bg-black rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-2xs cursor-pointer transition-colors"
-                  >
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
-                      <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.13-1.9-14.34-6.08-3.69-3.03-7.61-7.85-11.77-14.44-6.41-10.15-11.39-21.84-14.94-35.1-3.55-13.26-5.32-26.06-5.32-38.41 0-14.19 3.29-25.75 9.87-34.69 6.59-8.94 14.86-13.48 24.81-13.62 5.09 0 10.36 1.34 15.82 4.02 5.46 2.68 9.38 4.02 11.76 4.02 2.01 0 6.01-1.4 12.01-4.21 6-2.81 11.35-4.14 16.05-3.99 10.45.36 19.12 4.3 26.01 11.83-9.13 5.48-13.57 13.06-13.33 22.75.25 8.16 3.48 14.96 9.69 20.4 6.21 5.44 13.44 8.28 21.68 8.52-.77 6.03-2.18 11.91-4.25 17.65zm-31.52-114.1c0 5.44-1.89 10.74-5.67 15.91-4.63 6.3-10.45 10.08-17.47 11.34-.35-5.24.96-10.63 3.93-16.18 2.97-5.55 7.42-9.76 13.35-12.63 3.32-1.61 6.54-2.39 9.66-2.34.13 1.3.2 2.6.2 3.9z"/>
-                    </svg>
-                    <span>{socialLoading === 'apple' ? 'Connecting...' : 'Apple'}</span>
+                    <span>{socialLoading === 'google' ? 'Connecting...' : 'Continue with Google'}</span>
                   </button>
                 </div>
               </div>

@@ -33,6 +33,7 @@ export const CreateDropModal: React.FC<CreateDropModalProps> = ({
   const [expireHours, setExpireHours] = useState(3);
   const [imageUrl, setImageUrl] = useState(PRESET_FOOD_IMAGES[0].url);
   const [notes, setNotes] = useState('');
+  const [scheduledPickupTime, setScheduledPickupTime] = useState('');
   const [showPresetPicker, setShowPresetPicker] = useState(false);
 
   if (!isOpen) return null;
@@ -58,6 +59,7 @@ export const CreateDropModal: React.FC<CreateDropModalProps> = ({
       status: 'available',
       imageUrl,
       notes,
+      scheduledPickupTime: scheduledPickupTime.trim() || undefined,
       allergens: ['Wheat', 'Dairy']
     };
 
@@ -67,6 +69,7 @@ export const CreateDropModal: React.FC<CreateDropModalProps> = ({
     setTitle('');
     setQuantity('');
     setNotes('');
+    setScheduledPickupTime('');
   };
 
   return (
@@ -270,6 +273,17 @@ export const CreateDropModal: React.FC<CreateDropModalProps> = ({
                 className="flex-1 bg-[#F3F0E6] border border-[#E6E2D3] rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-[#386A20]"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#1D1B16] uppercase mb-1">Scheduled Pickup Window (Optional)</label>
+            <input
+              type="text"
+              value={scheduledPickupTime}
+              onChange={(e) => setScheduledPickupTime(e.target.value)}
+              placeholder="e.g. Today 4:00 PM - 6:00 PM"
+              className="w-full bg-[#F3F0E6] border border-[#E6E2D3] rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-[#386A20]"
+            />
           </div>
 
           <div>

@@ -30,6 +30,7 @@ export interface User {
   activityLog?: string[];
   preferredFoodTypes: FoodCategory[];
   preferredRadiusKm: number;
+  emailAlertsNearby?: boolean;
   ratingSum?: number;
   reviewCount?: number;
   reviews?: Review[];
@@ -48,6 +49,7 @@ export interface FoodDrop {
   distanceKm: number;
   postedAt: string; // ISO string
   expiresAt: string; // ISO string
+  scheduledPickupTime?: string;
   status: DropStatus;
   imageUrl: string;
   claimedBy?: string; // Recipient name/id
