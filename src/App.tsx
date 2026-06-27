@@ -12,6 +12,8 @@ import { ConfettiOverlay } from './components/ConfettiOverlay';
 import { INITIAL_DROPS, INITIAL_USERS } from './data';
 import { FoodCategory, FoodDrop, SegmentTab, SortOption, User, UserRole, ViewMode } from './types';
 import { Sparkles, SlidersHorizontal, ArrowUpDown, RefreshCw, ShieldAlert } from 'lucide-react';
+import { db } from './firebase';
+import { collection, onSnapshot, setDoc, doc, deleteDoc } from 'firebase/firestore';
 
 const STORAGE_KEY_DROPS = 'foodbridge_drops_v1';
 const STORAGE_KEY_USER = 'foodbridge_user_v1';
@@ -66,6 +68,24 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_DROPS, JSON.stringify(drops));
   }, [drops]);
+
+  // Real-time Firestore sync for Food Drops
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'food_drops'), (snapshot) => {
+      if (!snapshot.empty) {
+        const remoteDrops = snapshot.docs.map(docSnap => docSnap.data() as FoodDrop);
+        setDrops(remoteDrops);
+      } else {
+        // Seed initial drops if remote collection is empty
+        INITIAL_DROPS.forEach(drop => {
+          setDoc(doc(db, 'food_drops', drop.id), drop).catch(() => {});
+        });
+      }
+    }, (error) => {
+      console.warn("Firestore sync offline or permissions restricted, using local storage:", error);
+    });
+    return () => unsub();
+  }, []);
 
   // UI Navigation & View States
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -133,34 +153,41 @@ export default function App() {
   // Drop actions
   const handleCreateDrop = (newDrop: FoodDrop) => {
     setDrops([newDrop, ...drops]);
+    setDoc(doc(db, 'food_drops', newDrop.id), newDrop).catch(() => {});
   };
 
   const handleClaimDrop = (dropId: string) => {
-    setDrops(drops.map((d) => {
+    const updated = drops.map((d) => {
       if (d.id === dropId) {
-        return {
+        const next: FoodDrop = {
           ...d,
           status: 'claimed',
           claimedBy: currentUser.name || currentUser.id,
           claimedAt: new Date().toISOString(),
         };
+        setDoc(doc(db, 'food_drops', d.id), next).catch(() => {});
+        return next;
       }
       return d;
-    }));
+    });
+    setDrops(updated);
   };
 
   const handleMarkCollected = (dropId: string) => {
     const target = drops.find((d) => d.id === dropId) || null;
-    setDrops(drops.map((d) => {
+    const updated = drops.map((d) => {
       if (d.id === dropId) {
-        return {
+        const next: FoodDrop = {
           ...d,
           status: 'picked_up',
           pickedUpAt: new Date().toISOString(),
         };
+        setDoc(doc(db, 'food_drops', d.id), next).catch(() => {});
+        return next;
       }
       return d;
-    }));
+    });
+    setDrops(updated);
     if (target) {
       setConfettiDrop({ ...target, status: 'picked_up' });
     }
@@ -168,6 +195,7 @@ export default function App() {
 
   const handleDeleteDrop = (dropId: string) => {
     setDrops(drops.filter((d) => d.id !== dropId));
+    deleteDoc(doc(db, 'food_drops', dropId)).catch(() => {});
   };
 
   const handleResetFilters = () => {
