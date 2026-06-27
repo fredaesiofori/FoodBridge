@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Save, UserCircle, MapPin, Sliders, Check, Sparkles, History, CheckCircle2, AlertCircle, Package } from 'lucide-react';
+import { X, Save, UserCircle, MapPin, Sliders, Check, Sparkles, History, CheckCircle2, AlertCircle, Package, Bell } from 'lucide-react';
 import { User, FoodCategory, UserRole, FoodDrop } from '../types';
 
 interface ProfileModalProps {
