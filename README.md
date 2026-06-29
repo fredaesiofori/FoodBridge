@@ -2,7 +2,10 @@
   <img src="foodbridge image.png" alt="FoodBridge Splash Screen" width="800">
 </p>
 
-# 🌿 FoodBridge
+ ## 🌐 Live Demo
+
+🚀 Try the application here:  
+https://food-bridge-silk.vercel.app
 
 ## 🌿 About FoodBridge
 
