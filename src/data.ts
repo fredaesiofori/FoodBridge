@@ -7,6 +7,8 @@ export const INITIAL_USERS: User[] = [
     email: 'contact@stjudesshelter.org',
     role: 'recipient',
     status: 'active',
+    verificationStatus: 'verified',
+    emailVerified: true,
     activityLog: [
       'Collected 45 Artisan Croissants drop',
       'Requested AI recipe for surplus vegetables',
@@ -35,6 +37,8 @@ export const INITIAL_USERS: User[] = [
     email: 'manager@greenwheat.com',
     role: 'donor',
     status: 'active',
+    verificationStatus: 'verified',
+    emailVerified: true,
     activityLog: [
       'Posted 30 Fresh Sandwiches drop',
       'Updated surplus expiration timeline',
@@ -63,6 +67,9 @@ export const INITIAL_USERS: User[] = [
     email: 'fredaesiofori905@gmail.com',
     role: 'admin',
     status: 'active',
+    verificationStatus: 'verified',
+    emailVerified: true,
+    adminStatus: true,
     activityLog: [
       'Performed full RBAC security audit',
       'Approved Green Wheat donor verification',
@@ -72,21 +79,6 @@ export const INITIAL_USERS: User[] = [
     organization: 'FoodBridge Central Admin',
     preferredFoodTypes: ['Bakery & Bread', 'Fresh Produce', 'Prepared Meals', 'Dairy & Refrigerated', 'Pantry & Dry', 'Catering & Trays'],
     preferredRadiusKm: 25,
-  },
-  {
-    id: 'user-guest-1',
-    name: 'Community Guest Visitor',
-    email: 'guest@foodbridge.org',
-    role: 'guest',
-    status: 'active',
-    activityLog: [
-      'Browsed public homepage listings',
-      'Searched for prepared meals nearby'
-    ],
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    organization: 'Guest Explorer',
-    preferredFoodTypes: ['Bakery & Bread', 'Fresh Produce'],
-    preferredRadiusKm: 15,
   }
 ];
 

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, LogIn, UserPlus, KeyRound, ShieldAlert, Sparkles, Check } from 'lucide-react';
 import { UserRole } from '../types';
+import { auth, googleProvider } from '../firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 
 interface AuthModalsProps {
   isOpen: boolean;
@@ -33,11 +35,12 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
     if (mode === 'forgot') {
       setIsLoading(true);
       try {
+        await sendPasswordResetEmail(auth, email).catch(() => {});
         await fetch('/api/auth/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, newPassword: password || 'reset123' }),
-        });
+        }).catch(() => {});
       } catch (err) {
         // Fallback simulation
       }
@@ -47,64 +50,78 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
     }
 
     setIsLoading(true);
+    setAuthError(null);
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup';
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          requestedRole: role,
-          role,
-          name,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setAuthError(data.error || 'Authentication restriction enforced.');
-        setIsLoading(false);
-        return;
-      }
-
-      if (data.token) {
-        localStorage.setItem('foodbridge_auth_token', data.token);
-      }
-
-      const assignedRole = data.user?.role || role;
-      const assignedName = data.user?.name || name || email.split('@')[0];
-      const assignedEmail = data.user?.email || email;
-
-      onLoginSuccess(assignedRole, assignedName, assignedEmail, data.token);
-      onClose();
-    } catch (err: any) {
-      // Fallback local simulation if backend offline
+      // Enforce Predefined Admin Restriction
       if (role === 'admin' && email.toLowerCase() !== 'fredaesiofori905@gmail.com') {
         setAuthError('Access Denied: Admin role is restricted strictly to fredaesiofori905@gmail.com.');
         setIsLoading(false);
         return;
       }
-      const defaultNames: Record<UserRole, string> = {
-        recipient: name || "Hope Valley Community Center",
-        donor: name || "Harbor Bakery & Cafe",
-        admin: name || "Freda Esiofori (Admin)",
-        guest: name || "Community Guest Visitor",
-      };
-      onLoginSuccess(role, defaultNames[role], email);
-      onClose();
+
+      // Try Real Firebase Authentication First
+      try {
+        let userCredential;
+        if (mode === 'login') {
+          userCredential = await signInWithEmailAndPassword(auth, email, password);
+        } else {
+          userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        }
+        const fbUser = userCredential.user;
+        const assignedName = fbUser.displayName || name || email.split('@')[0];
+        onLoginSuccess(role, assignedName, fbUser.email || email);
+        onClose();
+        return;
+      } catch (firebaseErr: any) {
+        console.warn("Firebase Auth check:", firebaseErr.code, firebaseErr.message);
+        if (firebaseErr.code === 'auth/invalid-credential' || firebaseErr.code === 'auth/user-not-found' || firebaseErr.code === 'auth/wrong-password') {
+          setAuthError('Invalid email or password. If you are new, click "Sign Up Now" below.');
+          setIsLoading(false);
+          return;
+        } else if (firebaseErr.code === 'auth/email-already-in-use') {
+          setAuthError('This email is already registered in Firebase. Please log in.');
+          setIsLoading(false);
+          return;
+        } else if (firebaseErr.code === 'auth/weak-password') {
+          setAuthError('Password is too weak (must be at least 6 characters).');
+          setIsLoading(false);
+          return;
+        }
+        // If online Firebase fails for another reason, show error
+        setAuthError(`Firebase Auth: ${firebaseErr.message}`);
+        setIsLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      setAuthError(err.message || 'Authentication error.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialMock = (provider: 'google') => {
+  const handleSocialMock = async (provider: 'google') => {
     setSocialLoading(provider);
-    setTimeout(() => {
-      setSocialLoading(null);
-      onLoginSuccess('recipient', 'Google Authenticated Kitchen', `${provider}_user@foodbridge.org`);
+    setAuthError(null);
+    try {
+      const res = await signInWithPopup(auth, googleProvider);
+      const assignedName = res.user.displayName || 'Google Authenticated Kitchen';
+      const assignedEmail = res.user.email || `${provider}_user@foodbridge.org`;
+      onLoginSuccess('recipient', assignedName, assignedEmail);
       onClose();
-    }, 1000);
+    } catch (err: any) {
+      console.warn("Google Auth popup check:", err.code, err.message);
+      if (err.code === 'auth/unauthorized-domain' || err.message?.toLowerCase().includes('unauthorized')) {
+        setAuthError(`Domain Not Whitelisted: To use Google Sign-In, please copy your hostname "${window.location.hostname}" and add it to "Authorized Domains" in your Firebase Console (Authentication > Settings > Authorized Domains).`);
+      } else if (err.code === 'auth/popup-blocked') {
+        setAuthError('Google Sign-In popup was blocked by your browser. Please allow popups.');
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setAuthError('Google Sign-In window was closed before finishing.');
+      } else {
+        setAuthError(`Google Sign-In Error: ${err.message || 'Could not authenticate'}`);
+      }
+    } finally {
+      setSocialLoading(null);
+    }
   };
 
   return (
@@ -222,9 +239,43 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
               </div>
 
               {authError && (
-                <div className="p-3 mb-4 bg-red-50 border border-red-200 text-red-900 rounded-2xl text-xs font-bold flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1">
-                  <ShieldAlert className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                  <span>{authError}</span>
+                <div className="p-3.5 mb-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-200 rounded-2xl text-xs flex flex-col gap-2 animate-in fade-in slide-in-from-top-1">
+                  <div className="flex items-start gap-2.5 font-bold">
+                    <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">{authError}</span>
+                  </div>
+                  {(authError.includes('Whitelisted') || authError.includes('Google') || authError.includes('blocked') || authError.includes('closed')) && (
+                    <div className="mt-1 pt-2.5 border-t border-amber-200 dark:border-amber-800/60 flex flex-col gap-2">
+                      <div className="flex items-center justify-between gap-2 bg-white dark:bg-black/40 px-2.5 py-1.5 rounded-xl border border-amber-200 dark:border-amber-900/60">
+                        <code className="text-[11px] font-mono font-bold text-[#1D1B16] dark:text-[#EAE6DF] select-all truncate">
+                          {window.location.hostname}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(window.location.hostname);
+                            alert('Domain copied to clipboard!');
+                          }}
+                          className="px-2.5 py-1 bg-amber-200 hover:bg-amber-300 dark:bg-amber-800 dark:hover:bg-amber-700 text-amber-950 dark:text-amber-100 rounded-lg font-extrabold text-[10px] transition-colors cursor-pointer shrink-0"
+                        >
+                          Copy Domain
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-0.5">
+                        <span className="text-[11px] text-amber-800 dark:text-amber-300 font-medium">Bypass iframe popup sandbox:</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onLoginSuccess('recipient', 'Google Authenticated Kitchen (Demo)', 'demo_kitchen@foodbridge.org');
+                            onClose();
+                          }}
+                          className="px-3 py-1.5 bg-[#386A20] hover:bg-[#2C5319] text-white rounded-lg font-bold text-[11px] transition-colors cursor-pointer shadow-2xs"
+                        >
+                          Demo Google Sign-In
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -294,7 +345,7 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                 <p className="text-center text-[10px] uppercase font-bold text-[#79776E] mb-3 tracking-wider">
                   Or Instant Sign In With
                 </p>
-                <div className="flex justify-center">
+                <div className="flex flex-col gap-2.5 justify-center">
                   <button
                     type="button"
                     onClick={() => handleSocialMock('google')}
@@ -307,7 +358,17 @@ export const AuthModals: React.FC<AuthModalsProps> = ({
                       <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.5 0 15.5s.7 5.8 1.9 8.2l3.7-2.9c-.9-.8-1.7-2-2-3z"/>
                       <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"/>
                     </svg>
-                    <span>{socialLoading === 'google' ? 'Connecting...' : 'Continue with Google'}</span>
+                    <span>{socialLoading === 'google' ? 'Connecting...' : 'Continue with Google (Popup)'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onLoginSuccess('recipient', 'Google Authenticated Kitchen (Demo)', 'demo_google_user@foodbridge.org');
+                      onClose();
+                    }}
+                    className="w-full py-2 bg-[#F3F0E6] hover:bg-[#E6E2D3] dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[#386A20] dark:text-emerald-400 border border-[#386A20]/20 rounded-xl text-[11px] font-extrabold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                  >
+                    <span>⚡ Instant Demo Google Sign-In (Bypass Sandbox)</span>
                   </button>
                 </div>
               </div>

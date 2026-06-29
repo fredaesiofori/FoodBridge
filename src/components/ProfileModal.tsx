@@ -169,17 +169,44 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#1D1B16] uppercase mb-1">Account Role</label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
-                className="w-full bg-[#F3F0E6] border border-[#E6E2D3] rounded-xl px-4 py-2 text-sm outline-none font-bold text-[#386A20]"
-              >
-                <option value="donor">Food Donor</option>
-                <option value="recipient">Recipient</option>
-                <option value="guest">Guest Visitor</option>
-                <option value="admin">Admin Moderator</option>
-              </select>
+              <label className="block text-xs font-bold text-[#79776E] uppercase mb-1">Account Role (Permanently Locked)</label>
+              <div className="w-full bg-[#E6E2D3]/50 border border-[#E6E2D3] rounded-xl px-4 py-2 text-sm font-extrabold uppercase text-[#79776E] flex items-center justify-between select-none">
+                <span>{formData.role}</span>
+                <span className="text-[10px] bg-black/10 px-2 py-0.5 rounded text-black/60">Locked</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#1D1B16] uppercase mb-1">Phone Number</label>
+              <input
+                type="tel"
+                value={formData.phone || ''}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="+1 (555) 000-0000"
+                className="w-full bg-[#F3F0E6] border border-[#E6E2D3] rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#386A20]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#1D1B16] uppercase mb-1">Organization (Optional)</label>
+              <input
+                type="text"
+                value={formData.organization || ''}
+                onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                placeholder="e.g. Community Food Shelter"
+                className="w-full bg-[#F3F0E6] border border-[#E6E2D3] rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#386A20]"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold text-[#1D1B16] uppercase mb-1">Pickup / Delivery Address</label>
+              <input
+                type="text"
+                value={formData.address || ''}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder="123 Market St, San Francisco, CA"
+                className="w-full bg-[#F3F0E6] border border-[#E6E2D3] rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#386A20]"
+              />
             </div>
 
             <div>

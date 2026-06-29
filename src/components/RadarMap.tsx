@@ -31,9 +31,9 @@ export const RadarMap: React.FC<RadarMapProps> = ({
   };
 
   return (
-    <div className="bg-white border border-[#E6E2D3] rounded-2xl p-6 shadow-xs flex flex-col h-[calc(100vh-16rem)] min-h-[500px]">
+    <div className="bg-white dark:bg-[#12220E] border border-[#E6E2D3] dark:border-[#24421C] text-[#1D1B16] dark:text-[#EAE6DF] rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col h-[calc(100dvh-18rem)] md:h-[calc(100vh-16rem)] min-h-[340px] sm:min-h-[500px]">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-[#E6E2D3] mb-4">
+      <div className="flex items-center justify-between pb-4 border-b border-[#E6E2D3] dark:border-[#24421C] mb-4">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-[#E7F0E1] text-[#386A20] rounded-lg">
             <Radar className="w-5 h-5 animate-spin" style={{ animationDuration: '8s' }} />

@@ -13,9 +13,10 @@ import { SplashScreen } from './components/SplashScreen';
 import { AnimatePresence } from 'motion/react';
 import { INITIAL_DROPS, INITIAL_USERS } from './data';
 import { FoodCategory, FoodDrop, SegmentTab, SortOption, User, UserRole, ViewMode } from './types';
-import { Sparkles, SlidersHorizontal, ArrowUpDown, RefreshCw, ShieldAlert } from 'lucide-react';
-import { db } from './firebase';
+import { Sparkles, SlidersHorizontal, ArrowUpDown, RefreshCw, ShieldAlert, WifiOff } from 'lucide-react';
+import { db, auth } from './firebase';
 import { collection, onSnapshot, setDoc, doc, deleteDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const STORAGE_KEY_DROPS = 'foodbridge_drops_v1';
 const STORAGE_KEY_USER = 'foodbridge_user_v1';
@@ -33,6 +34,20 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_THEME, isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
+
+  // Network Offline Connection tracking
+  const [isOffline, setIsOffline] = useState<boolean>(() => !navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Simulated Alert Toast state
   const [toastAlert, setToastAlert] = useState<{ title: string; subtitle: string } | null>(null);
@@ -90,6 +105,28 @@ export default function App() {
       console.warn("Firestore sync offline or permissions restricted, using local storage:", error);
     });
     return () => unsub();
+  }, []);
+
+  // Sync real Firebase Auth user session
+  useEffect(() => {
+    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const email = firebaseUser.email || '';
+        let assignedRole: UserRole = 'recipient';
+        if (email.toLowerCase() === 'fredaesiofori905@gmail.com') assignedRole = 'admin';
+        else if (email.toLowerCase().includes('donor') || email.toLowerCase().includes('bakery')) assignedRole = 'donor';
+
+        const name = firebaseUser.displayName || email.split('@')[0] || 'Authenticated Kitchen';
+        setCurrentUser((prev) => ({
+          ...prev,
+          name,
+          email: email || prev.email,
+          role: assignedRole,
+          avatar: firebaseUser.photoURL || prev.avatar,
+        }));
+      }
+    });
+    return () => unsubAuth();
   }, []);
 
   // UI Navigation & View States
@@ -157,8 +194,8 @@ export default function App() {
 
   // Role switching helper
   const handleSwitchRole = (role: UserRole) => {
-    if (currentUser.role === 'recipient' && role !== 'recipient') return;
-    if (currentUser.role === 'donor' && role !== 'donor') return;
+    if (currentUser.role === 'recipient' && role !== 'recipient' && role !== 'guest') return;
+    if (currentUser.role === 'donor' && role !== 'donor' && role !== 'guest') return;
     window.location.hash = `#/dashboard/${role}`;
     const matchingUser = INITIAL_USERS.find((u) => u.role === role);
     if (matchingUser) {
@@ -274,7 +311,7 @@ export default function App() {
   }, [drops, activeSegment, selectedCategory, radiusKm, searchQuery, sortOption]);
 
   return (
-    <div className={`flex flex-col h-screen w-full bg-[#FDFCF8] dark:bg-[#0E1E0B] text-[#1D1B16] dark:text-[#EAE6DF] font-sans overflow-hidden select-none transition-colors ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`flex flex-col h-[100dvh] md:h-screen w-full bg-[#FDFCF8] dark:bg-[#0E1E0B] text-[#1D1B16] dark:text-[#EAE6DF] font-sans overflow-hidden select-none transition-colors ${isDarkMode ? 'dark' : ''}`}>
       {/* Startup Animated Splash Screen */}
       <AnimatePresence>
         {showSplash && (
@@ -298,6 +335,16 @@ export default function App() {
         </div>
       )}
 
+      {/* Network Offline Connection Banner */}
+      {isOffline && (
+        <div className="bg-amber-500 dark:bg-amber-600 text-white px-4 py-2 text-xs font-semibold flex items-center justify-between shadow-md transition-all shrink-0 z-50 animate-in fade-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2 mx-auto">
+            <WifiOff className="w-4 h-4 shrink-0 animate-pulse" />
+            <span>⚡ Offline Collection Mode: Showing previously loaded food drops from local cache. Coordinates & pickup instructions remain accessible!</span>
+          </div>
+        </div>
+      )}
+
       {/* Top Navbar */}
       <Navbar
         currentUser={currentUser}
@@ -307,6 +354,19 @@ export default function App() {
         onOpenProfile={() => setProfileOpen(true)}
         onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })}
         onSwitchRole={handleSwitchRole}
+        onSignOut={() => {
+          const guestUser = INITIAL_USERS.find((u) => u.role === 'guest') || {
+            ...INITIAL_USERS[0],
+            id: 'guest_1',
+            name: 'Guest Visitor',
+            email: '',
+            role: 'guest' as UserRole,
+            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100',
+          };
+          setCurrentUser({ ...guestUser, preferredRadiusKm: radiusKm });
+          window.location.hash = '#/dashboard/guest';
+          setAuthModal({ isOpen: true, mode: 'login' });
+        }}
         onToggleTheme={() => setIsDarkMode(!isDarkMode)}
         onSimulateAlert={handleSimulateAlert}
       />
@@ -490,19 +550,19 @@ export default function App() {
       </div>
 
       {/* Footer */}
-      <footer className="h-10 bg-[#E6E2D3] dark:bg-[#162912] border-t border-[#D9D5C6] dark:border-[#24421C] px-6 flex items-center justify-between text-[10px] text-[#79776E] dark:text-[#8AA280] font-medium shrink-0 z-10 transition-colors">
-        <div className="flex gap-4 items-center">
+      <footer className="min-h-[40px] py-2 bg-[#E6E2D3] dark:bg-[#162912] border-t border-[#D9D5C6] dark:border-[#24421C] px-3 sm:px-6 flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#79776E] dark:text-[#8AA280] font-medium shrink-0 z-10 transition-colors">
+        <div className="flex flex-wrap gap-2 sm:gap-4 items-center">
           <span>© 2026 FoodBridge Zero-Waste Platform</span>
           <span className="flex items-center gap-1.5 font-bold text-[#386A20] dark:text-[#90C872]">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
-            Live Server: North Precinct District
+            Live: North Precinct District
           </span>
         </div>
-        <div className="hidden sm:flex gap-4">
-          <button onClick={() => setAuthModal({ isOpen: true, mode: 'login' })} className="hover:text-[#386A20] dark:hover:text-[#A4D888] cursor-pointer">Platform Auth</button>
+        <div className="flex gap-3 sm:gap-4 items-center">
+          <button onClick={() => setAuthModal({ isOpen: true, mode: 'login' })} className="hover:text-[#386A20] dark:hover:text-[#A4D888] cursor-pointer font-bold">Platform Auth</button>
           <span className="text-[#D9D5C6] dark:text-[#24421C]">|</span>
-          <a href="#" className="hover:text-[#386A20] dark:hover:text-[#A4D888]">Privacy Policy</a>
-          <a href="#" className="hover:text-[#386A20] dark:hover:text-[#A4D888]">Terms of Rescue</a>
+          <a href="#/faq" className="hover:text-[#386A20] dark:hover:text-[#A4D888]">Help & FAQ</a>
+          <a href="#/about" className="hover:text-[#386A20] dark:hover:text-[#A4D888]">Privacy</a>
         </div>
       </footer>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, UserCircle, LogIn, Sparkles, ShieldCheck, HeartHandshake, Utensils, Sun, Moon, BellRing } from 'lucide-react';
+import { Search, UserCircle, LogIn, LogOut, Sparkles, ShieldCheck, HeartHandshake, Utensils, Sun, Moon, BellRing } from 'lucide-react';
 import { User, UserRole } from '../types';
 
 interface NavbarProps {
@@ -10,6 +10,7 @@ interface NavbarProps {
   onOpenProfile: () => void;
   onOpenAuth: (mode: 'login' | 'signup') => void;
   onSwitchRole: (role: UserRole) => void;
+  onSignOut: () => void;
   onToggleTheme: () => void;
   onSimulateAlert: () => void;
 }
@@ -22,6 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenProfile,
   onOpenAuth,
   onSwitchRole,
+  onSignOut,
   onToggleTheme,
   onSimulateAlert,
 }) => {
@@ -70,28 +72,39 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile Controls Right Alignment */}
         <div className="flex md:hidden items-center gap-1 sm:gap-1.5 shrink-0 overflow-x-auto">
-          {/* Quick Auth Switch Button */}
-          <button
-            onClick={() => onOpenAuth('login')}
-            title="Switch Account"
-            className="flex items-center gap-1 px-2 py-2 min-h-[44px] border border-[#E6E2D3] dark:border-[#2A4B20] hover:border-[#386A20] dark:hover:border-[#76B058] rounded-lg text-xs font-bold text-[#386A20] dark:text-[#A4D888] bg-[#FDFCF8] dark:bg-[#162912] transition-all cursor-pointer shrink-0"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            <span>Switch</span>
-          </button>
-
-          {/* Mobile Role Switcher */}
-          {demoRoles.length > 1 && (
-            <select
-              value={currentUser.role}
-              onChange={(e) => onSwitchRole(e.target.value as UserRole)}
-              aria-label="Switch User Role"
-              className="bg-[#F3F0E6] dark:bg-[#1C3317] border border-[#E6E2D3] dark:border-[#2A4B20] text-[#1D1B16] dark:text-[#EAE6DF] text-xs font-extrabold rounded-lg px-1.5 py-2 min-h-[44px] cursor-pointer outline-none capitalize shrink-0"
+          {/* Auth / Sign Out Trigger */}
+          {currentUser.role !== 'guest' ? (
+            <button
+              onClick={onSignOut}
+              title="Sign out of account"
+              className="flex items-center gap-1 px-2.5 py-2 min-h-[44px] border border-red-200 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg text-xs font-bold text-red-600 dark:text-red-400 bg-[#FDFCF8] dark:bg-[#162912] transition-all cursor-pointer shrink-0 shadow-2xs"
             >
-              {demoRoles.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
+              <LogOut className="w-3.5 h-3.5 text-red-500" />
+              <span>Sign Out</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => onOpenAuth('login')}
+                title="Log In"
+                className="flex items-center gap-1 px-2 py-2 min-h-[44px] border border-[#E6E2D3] dark:border-[#2A4B20] hover:border-[#386A20] dark:hover:border-[#76B058] rounded-lg text-xs font-bold text-[#386A20] dark:text-[#A4D888] bg-[#FDFCF8] dark:bg-[#162912] transition-all cursor-pointer shrink-0"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Log In</span>
+              </button>
+              {demoRoles.length > 1 && (
+                <select
+                  value={currentUser.role}
+                  onChange={(e) => onSwitchRole(e.target.value as UserRole)}
+                  aria-label="Switch User Role"
+                  className="bg-[#F3F0E6] dark:bg-[#1C3317] border border-[#E6E2D3] dark:border-[#2A4B20] text-[#1D1B16] dark:text-[#EAE6DF] text-xs font-extrabold rounded-lg px-1.5 py-2 min-h-[44px] cursor-pointer outline-none capitalize shrink-0"
+                >
+                  {demoRoles.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              )}
+            </>
           )}
 
           {/* Deep-Forest Dark Mode Switcher */}
@@ -147,15 +160,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Public Pages & Role Navigation Links */}
-      <div className="hidden lg:flex items-center gap-3.5 text-xs font-bold text-[#79776E] dark:text-[#8AA280] shrink-0 mx-2">
-        <a href="#/home" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors">Home</a>
-        <a href={`#/dashboard/${currentUser.role}`} className="text-[#386A20] dark:text-[#90C872] bg-[#E7F0E1] dark:bg-[#224418] px-3 py-1.5 rounded-full shadow-2xs font-extrabold capitalize">
+      {/* Public Pages & Role Navigation Links (Visible across all screens) */}
+      <div className="flex items-center gap-2 sm:gap-3.5 text-xs font-bold text-[#79776E] dark:text-[#8AA280] shrink-0 mx-1 overflow-x-auto no-scrollbar py-1">
+        <a href="#/home" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors whitespace-nowrap px-2 py-1">Home</a>
+        <a href={`#/dashboard/${currentUser.role}`} className="text-[#386A20] dark:text-[#90C872] bg-[#E7F0E1] dark:bg-[#224418] px-3 py-1.5 rounded-full shadow-2xs font-extrabold capitalize whitespace-nowrap">
           {currentUser.role} Dashboard
         </a>
-        <a href="#/about" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors">About</a>
-        <a href="#/faq" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors">FAQ</a>
-        <a href="#/contact" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors">Contact</a>
+        <a href="#/about" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors whitespace-nowrap px-2 py-1">About</a>
+        <a href="#/faq" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors whitespace-nowrap px-2 py-1">FAQ</a>
+        <a href="#/contact" className="hover:text-[#386A20] dark:hover:text-[#90C872] transition-colors whitespace-nowrap px-2 py-1">Contact</a>
       </div>
 
       {/* Desktop Controls (Hidden on Mobile) */}
@@ -181,7 +194,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         {/* Role Demo Switcher */}
-        {demoRoles.length > 1 && (
+        {currentUser.role === 'guest' && demoRoles.length > 1 && (
           <div className="hidden lg:flex items-center bg-[#F3F0E6] dark:bg-[#1C3317] rounded-lg p-0.5 border border-[#E6E2D3] dark:border-[#2A4B20] text-[11px]">
             <span className="px-2 font-bold text-[#79776E] dark:text-[#8AA280] text-[10px]">ROLE:</span>
             {demoRoles.map((r) => (
@@ -230,14 +243,25 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
 
-        {/* Quick Auth Trigger */}
-        <button
-          onClick={() => onOpenAuth('login')}
-          className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] border border-[#E6E2D3] dark:border-[#2A4B20] hover:border-[#386A20] dark:hover:border-[#76B058] rounded-lg text-xs font-bold text-[#386A20] dark:text-[#A4D888] bg-[#FDFCF8] dark:bg-[#162912] transition-all cursor-pointer"
-        >
-          <LogIn className="w-3.5 h-3.5" />
-          Switch
-        </button>
+        {/* Auth / Sign Out Trigger */}
+        {currentUser.role !== 'guest' ? (
+          <button
+            onClick={onSignOut}
+            title="Sign out of account"
+            className="flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] border border-red-200 dark:border-red-900/60 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-2xs"
+          >
+            <LogOut className="w-3.5 h-3.5 text-red-500 shrink-0" />
+            <span>Sign Out</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => onOpenAuth('login')}
+            className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] border border-[#E6E2D3] dark:border-[#2A4B20] hover:border-[#386A20] dark:hover:border-[#76B058] rounded-lg text-xs font-bold text-[#386A20] dark:text-[#A4D888] bg-[#FDFCF8] dark:bg-[#162912] transition-all cursor-pointer"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            Log In
+          </button>
+        )}
       </div>
     </nav>
   );

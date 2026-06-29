@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to get user document
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Helper function to check if user is Admin
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'fredaesiofori905@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().role == 'admin')
+      );
+    }
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      // Anyone authenticated can read user profiles
+      allow read: if isAuthenticated();
+      
+      // Creating account: allow user to create their own initial profile
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Updating profile: user can update own profile, but CANNOT modify protected fields
+      // Admin can update any profile (roles, verification status, etc.)
+      allow update: if isAdmin() || (
+        isAuthenticated() && request.auth.uid == userId &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'verificationStatus', 'adminStatus', 'id', 'uid', 'emailVerified'])
+      );
+      
+      // Deleting account: only Admin or the user themselves
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+    }
+
+    // FOOD DROPS COLLECTION
+    match /food_drops/{dropId} {
+      // Anyone can read available food drops
+      allow read: if true;
+      
+      // Creating listing: only verified donors or admin
+      allow create: if isAdmin() || (
+        isAuthenticated() &&
+        getUserData().role == 'donor' &&
+        (getUserData().verificationStatus == 'verified' || getUserData().status == 'active')
+      );
+      
+      // Updating listing: donor can edit own listing or accept/reject requests, admin can edit any
+      allow update: if isAdmin() || (
+        isAuthenticated() && (
+          (getUserData().role == 'donor' && resource.data.donorId == request.auth.uid) ||
+          // Recipients can only request or cancel request on available/reserved items
+          (getUserData().role == 'recipient' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'claimedBy', 'claimedAt', 'requestedBy', 'updatedAt']))
+        )
+      );
+      
+      // Deleting listing: Admin can delete any, donors can only delete their own
+      allow delete: if isAdmin() || (
+        isAuthenticated() && getUserData().role == 'donor' && resource.data.donorId == request.auth.uid
+      );
+    }
+
+    // CATEGORIES & REPORTS
+    match /categories/{catId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /reports/{reportId} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
