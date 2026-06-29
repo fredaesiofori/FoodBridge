@@ -1,20 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+<p align="center">
+  <img src="foodbridge image.png" alt="FoodBridge Splash Screen" width="800">
+</p>
 
-# Run and deploy your AI Studio app
+# 🌿 FoodBridge
 
-This contains everything you need to run your app locally.
+## 🌿 About FoodBridge
 
-View your app in AI Studio: https://ai.studio/apps/3f69124a-aff8-48c8-be5e-ac8cb497db36
+**FoodBridge** is a modern, production-ready food donation platform designed to reduce food waste by connecting verified food donors with individuals and organizations in need. The platform serves as a bridge between surplus food providers and recipients, ensuring that safe, edible food reaches communities instead of ending up in landfills.
 
-## Run Locally
+Built with security, reliability, and scalability in mind, FoodBridge features role-based access control with dedicated dashboards for **Administrators**, **Donors**, and **Recipients**. Donors can securely list available food items, while recipients can browse and request donations based on their needs. Administrators oversee the entire platform by verifying donors, managing users, moderating food listings, and maintaining the integrity of the ecosystem.
 
-**Prerequisites:**  Node.js
+FoodBridge leverages **Firebase Authentication**, **Cloud Firestore**, **Firebase Storage**, and robust security rules to provide a seamless and secure user experience. The platform supports email/password authentication, Google Sign-In, password recovery, and protected routes to ensure that every user interaction is authenticated and authorized.
 
+Whether it's a restaurant with excess meals, a grocery store with surplus produce, or a community organization seeking food assistance, FoodBridge creates a reliable digital ecosystem where food is rescued, shared responsibly, and delivered to those who need it most.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## ✨ Key Features
+
+* 🔐 Secure Firebase Authentication (Email & Google Sign-In)
+* 👥 Role-based access for Admin, Donor, and Recipient
+* ✅ Admin verification for donor accounts
+* 🍽️ Food listing, browsing, and request management
+* 📍 Pickup location and scheduling support
+* 📸 Food image uploads with Firebase Storage
+* 🔎 Search and filter available food donations
+* 📊 Administrative dashboard for user and content management
+* 🔒 Protected routes and Firebase Security Rules
+* 📱 Responsive design optimized for desktop and mobile devices
+
+## 🎯 Mission
+
+To reduce food waste, fight hunger, and build stronger communities by making surplus food accessible through a secure, transparent, and user-friendly digital platform.
+
+> **FoodBridge — Rescuing Surplus • Nourishing Communities.**
